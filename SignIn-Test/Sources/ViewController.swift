@@ -16,6 +16,7 @@ class ViewController: UIViewController,
     @IBOutlet weak var googleSignIn: UIButton!
     @IBOutlet weak var serverCodeSignIn: UILabel!
     @IBOutlet weak var serverCodeSignInSilent: UILabel!
+    @IBOutlet weak var serverCodeRefreshTokens: UILabel!
     @IBOutlet weak var errorDescription: UILabel!
     
     private var signInButtonTapped: UIButton?
@@ -43,6 +44,31 @@ class ViewController: UIViewController,
     }
 
     // MARK: Button Actions
+    
+    @IBAction func onRefreshTokens() {
+        let shared = GIDSignIn.sharedInstance()
+        
+        guard let strongUser = shared?.currentUser else {
+            errorDescription.text = "No User Found"
+            return
+        }
+        
+        guard let strongAuth = strongUser.authentication else {
+            errorDescription.text = "No auth object"
+            return
+        }
+        
+        strongAuth.refreshTokens { (_, error) in
+            guard let strongUser = shared?.currentUser else {
+                self.errorDescription.text = "No User Found"
+                return
+            }
+            
+            self.serverCodeRefreshTokens.text = strongUser.serverAuthCode
+                ?? error?.localizedDescription
+                ?? "No Server Code"
+        }
+    }
     
     @IBAction func onSignIn(_ sender: UIButton) {
         signInButtonTapped = sender
